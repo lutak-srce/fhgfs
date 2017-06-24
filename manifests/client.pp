@@ -20,6 +20,9 @@ class fhgfs::client (
     require  => Package['kernel-devel'],
   }
 
+  package { 'fhgfs-helperd': }
+  package { 'fhgfs-client': }
+
   service { 'fhgfs-helperd':
     ensure   => running,
     enable   => true,
@@ -32,11 +35,23 @@ class fhgfs::client (
     source  => $mounts,
   }
 
+  file { '/etc/fhgfs/fhgfs-client-autobuild.conf':
+    require => Package['fhgfs-client'],
+    content => template('fhgfs/fhgfs-client-autobuild.conf.erb'),
+  }
+
   service { 'fhgfs-client':
     ensure   => running,
     enable   => true,
     provider => redhat,
-    require  => [ Package['fhgfs-client'], Service['fhgfs-helperd'], File['/etc/fhgfs/fhgfs-mounts.conf'] ],
+    require  => [
+      Package['fhgfs-client'],
+      Service['fhgfs-helperd'],
+      File['/etc/fhgfs/fhgfs-mounts.conf'],
+      File['/etc/fhgfs/fhgfs-client.conf'],
+      File['/etc/fhgfs/fhgfs-client-autobuild.conf'],
+    ],
+
   }
 
 }
